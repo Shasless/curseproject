@@ -11,8 +11,8 @@ class screen():
         self.MenuSelect = 1
         self.cursor_x = 10
         self.cursor_y = 10
-        self.origin_x = -678876
-        self.origin_y = 67750
+        self.origin_x = -67
+        self.origin_y = 10000
         self.InfoLine = ["first", "second", "third", "fourth", "fifth"]
         self.Textmenu = ["", "historic", "second", "third", "fourth", "fifth"]
         self.map = map()
@@ -119,7 +119,7 @@ class screen():
 
             for nx in range(1,  width - 1):
 
-                biome = self.map.mapreturn((self.origin_x+nx) /20, (self.origin_y+ny) /20)
+                biome = self.map.mapreturn((self.origin_x+nx) /30, (self.origin_y+ny) /30)
                 if biome == "OCEAN":
                     self.wBoard.addstr(ny, nx, "&", curses.color_pair(5))
                 elif biome == "BEACH":
@@ -131,7 +131,7 @@ class screen():
                 elif biome == "TUNDRA":
                     self.wBoard.addstr(ny, nx, "§", curses.color_pair(3))
                 elif biome == "SNOW":
-                    self.wBoard.addstr(ny, nx, " ", curses.color_pair(5))
+                    self.wBoard.addstr(ny, nx, " ", curses.color_pair(3))
                 elif biome == "TEMPERATE_DESERT":
                     self.wBoard.addstr(ny, nx, "§", curses.color_pair(2))
                 elif biome == "SHRUBLAND":
