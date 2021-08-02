@@ -3,10 +3,10 @@
 ascii game
 
 TO DO:
--REDO: BIOME GENERATION
--OPTIMIZE DISPLAY
--REDO DISPLAY HISTORIC
--new feature
+\n-REDO: BIOME GENERATION
+\n-OPTIMIZE DISPLAY
+\n-REDO DISPLAY HISTORIC
+\n-new feature
 
 BUG:
- -crash if terminal too small
+ \n-crash if terminal too small
