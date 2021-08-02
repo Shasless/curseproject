@@ -1,5 +1,7 @@
 import curses
 
+from map import map
+
 
 class screen():
 
@@ -7,16 +9,18 @@ class screen():
         self.newwidth = 100000000000
         self.activeMenu = False
         self.MenuSelect = 1
-        self.cursor_x = 0
-        self.cursor_y = 0
+        self.cursor_x = 10
+        self.cursor_y = 10
+        self.origin_x = -678876
+        self.origin_y = 67750
         self.InfoLine = ["first", "second", "third", "fourth", "fifth"]
-        self.Textmenu = ["","historic", "second", "third", "fourth", "fifth"]
-
+        self.Textmenu = ["", "historic", "second", "third", "fourth", "fifth"]
+        self.map = map()
         curses.wrapper(self.main)
 
     ## TO REWORK
-    def ShowHistoric(self,screen):
-        k =0
+    def ShowHistoric(self, screen):
+        k = 0
         height, width = screen.getmaxyx()
         try:
             self.wMenu.erase()
@@ -30,11 +34,11 @@ class screen():
             self.wBoard.erase()
         except:
             pass
-        self.wHistoric = curses.newwin(int(height*0.8), int(width*0.8), int(height*0.1), int(width*0.1))
+        self.wHistoric = curses.newwin(int(height * 0.8), int(width * 0.8), int(height * 0.1), int(width * 0.1))
         self.wHistoric.box()
 
         for i in range(0, len(self.InfoLine)):
-            self.wHistoric.addstr(i+1, 1, self.InfoLine[i])
+            self.wHistoric.addstr(i + 1, 1, self.InfoLine[i])
         self.wHistoric.refresh()
 
         while (k != ord('q')):
@@ -69,7 +73,6 @@ class screen():
                 self.wMenu.refresh()
                 self.ShowHistoric(screen)
                 break
-
 
             k = screen.getch()
         self.wHistoric.erase()
@@ -112,9 +115,41 @@ class screen():
     def fillBoard(self):
         height, width = self.wBoard.getmaxyx()
 
-        for y in range(1, height - 1):
-            for x in range(1, (width - 1)):
-                self.wBoard.insch(y, x, ord('*'))
+        for ny in range(1, height - 1):
+
+            for nx in range(1,  width - 1):
+
+                biome = self.map.mapreturn((self.origin_x+nx) /20, (self.origin_y+ny) /20)
+                if biome == "OCEAN":
+                    self.wBoard.addstr(ny, nx, "&", curses.color_pair(5))
+                elif biome == "BEACH":
+                    self.wBoard.addstr(ny, nx, "ç", curses.color_pair(1))
+                elif biome == "SCORCHED":
+                    self.wBoard.addstr(ny, nx, "ç", curses.color_pair(2))
+                elif biome == "BARE":
+                    self.wBoard.addstr(ny, nx, "c", curses.color_pair(2))
+                elif biome == "TUNDRA":
+                    self.wBoard.addstr(ny, nx, "§", curses.color_pair(3))
+                elif biome == "SNOW":
+                    self.wBoard.addstr(ny, nx, " ", curses.color_pair(5))
+                elif biome == "TEMPERATE_DESERT":
+                    self.wBoard.addstr(ny, nx, "§", curses.color_pair(2))
+                elif biome == "SHRUBLAND":
+                    self.wBoard.addstr(ny, nx, "ç", curses.color_pair(4))
+                elif biome == "TAIGA":
+                    self.wBoard.addstr(ny, nx, "c", curses.color_pair(3))
+                elif biome == "GRASSLAND":
+                    self.wBoard.addstr(ny, nx, "§", curses.color_pair(4))
+                elif biome == "TEMPERATE_DECIDUOUS_FOREST":
+                    self.wBoard.addstr(ny, nx, "%", curses.color_pair(4))
+                elif biome == "TEMPERATE_RAIN_FOREST":
+                    self.wBoard.addstr(ny, nx, "$", curses.color_pair(4))
+                elif biome == "SUBTROPICAL_DESERT":
+                    self.wBoard.addstr(ny, nx, "$", curses.color_pair(6))
+                elif biome == "TROPICAL_SEASONAL_FOREST":
+                    self.wBoard.addstr(ny, nx, "£", curses.color_pair(4))
+                elif biome == "TROPICAL_RAIN_FOREST":
+                    self.wBoard.addstr(ny, nx, "€", curses.color_pair(4))
 
     def fillMenu(self):
         height, width = self.wMenu.getmaxyx()
@@ -134,15 +169,19 @@ class screen():
         screen.clear()
         screen.refresh()
         curses.start_color()
-        curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
         curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
         curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        curses.init_pair(4, curses.COLOR_GREEN, curses.COLOR_BLACK);
+        curses.init_pair(5, curses.COLOR_CYAN, curses.COLOR_BLUE);
+        curses.init_pair(6, curses.COLOR_YELLOW, curses.COLOR_BLACK);
+        curses.init_pair(7, curses.COLOR_RED, curses.COLOR_MAGENTA);
 
         self.iniateWin(screen)
 
         # Loop where k is the last character pressed
         while (k != ord('q')):
-
+            height, width = self.wBoard.getmaxyx()
             if (k == curses.KEY_RESIZE):
                 self.iniateWin(screen)
             elif (k == ord('m')):
@@ -159,14 +198,26 @@ class screen():
                     self.MenuSelect = 5
             elif (k == curses.KEY_DOWN and not self.activeMenu):
                 self.cursor_y += 1
+                if (self.cursor_y == (height-1)):
+                    self.cursor_y -= 1
+                    self.origin_y += 1
             elif (k == curses.KEY_UP and not self.activeMenu):
                 self.cursor_y -= 1
+                if(self.cursor_y==0):
+                    self.cursor_y += 1
+                    self.origin_y -= 1
             elif (k == curses.KEY_RIGHT and not self.activeMenu):
                 self.cursor_x += 1
+                if (self.cursor_x == (width-1)):
+                    self.cursor_x -= 1
+                    self.origin_x += 1
             elif (k == curses.KEY_LEFT and not self.activeMenu):
                 self.cursor_x -= 1
-            elif (k == ord('a') and  self.activeMenu):
-                if(self.MenuSelect==1):
+                if (self.cursor_x == 0):
+                    self.cursor_x += 1
+                    self.origin_x -= 1
+            elif (k == ord('a') and self.activeMenu):
+                if (self.MenuSelect == 1):
                     self.ShowHistoric(screen)
 
             self.fillBoard()
@@ -182,8 +233,8 @@ class screen():
             keystr = "Last key pressed: {}".format(k)
 
             self.wInfo.addstr(1, 1, keystr)
-            for i in range(2, 5):
-                self.wInfo.addstr(i, 1, self.InfoLine[len(self.InfoLine)+1-i])
+            for i in range(2, 3):
+                self.wInfo.addstr(i, 1, self.InfoLine[len(self.InfoLine) + 1 - i])
 
             if (self.activeMenu):
                 self.fillMenu()
