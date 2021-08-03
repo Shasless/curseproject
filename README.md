@@ -10,9 +10,11 @@ FEATURE:
 
 TO DO:
 <br />-REDO: BIOME GENERATION
-<br />-OPTIMIZE DISPLAY MAP
+<br />-create func to fill the info win
 <br />-REDO DISPLAY HISTORIC
 <br />-new feature
 
 <br />BUG:
  <br />-crash if terminal too small
+ <br />rework historic (crash if list too long)
+  <br />- bug info win
