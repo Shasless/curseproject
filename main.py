@@ -9,10 +9,15 @@ class screen():
         self.newwidth = 100000000000
         self.activeMenu = False
         self.MenuSelect = 1
-        self.cursor_x = 10
-        self.cursor_y = 10
-        self.origin_x = -67
-        self.origin_y = 10000
+        self.cursor_x = 60
+        self.cursor_y = 20
+        self.origin_x = 0
+        self.origin_y = 0
+        self.bundary_x_plus = 0
+        self.bundary_x_less = 0
+        self.bundary_y_plus = 0
+        self.bundary_y_less = 0
+        self.currentBiome="NEW"
         self.InfoLine = ["first", "second", "third", "fourth", "fifth"]
         self.Textmenu = ["", "historic", "second", "third", "fourth", "fifth"]
         self.map = map()
@@ -89,6 +94,11 @@ class screen():
         c = width - b
         d = height - a
 
+        self.bundary_x_plus = int(0.3 *width)
+        self.bundary_x_less =  int(0.7 *width)
+        self.bundary_y_plus =  int(0.3* a)
+        self.bundary_y_less =  int(0.7 * a)
+
         try:
             self.wMenu.erase()
 
@@ -101,6 +111,8 @@ class screen():
             self.wBoard.erase()
         except:
             pass
+
+
 
         if (self.activeMenu):
             self.wMenu = curses.newwin(a, b, 0, c)
@@ -119,7 +131,7 @@ class screen():
 
             for nx in range(1,  width - 1):
 
-                biome = self.map.mapreturn((self.origin_x+nx) /25, (self.origin_y+ny) /25)
+                biome = self.map.mapreturn((self.origin_x+nx) /30, (self.origin_y+ny) /30)
                 if biome == "OCEAN":
                     self.wBoard.addstr(ny, nx, "&", curses.color_pair(5))
                 elif biome == "BEACH":
@@ -150,6 +162,9 @@ class screen():
                     self.wBoard.addstr(ny, nx, "£", curses.color_pair(4))
                 elif biome == "TROPICAL_RAIN_FOREST":
                     self.wBoard.addstr(ny, nx, "€", curses.color_pair(4))
+                if(self.currentBiome != biome and nx == self.cursor_x and ny ==self.cursor_y):
+                    self.currentBiome = biome
+                    self.InfoLine.append("You are now in {}".format(biome))
 
     def fillMenu(self):
         height, width = self.wMenu.getmaxyx()
@@ -198,22 +213,22 @@ class screen():
                     self.MenuSelect = 5
             elif (k == curses.KEY_DOWN and not self.activeMenu):
                 self.cursor_y += 1
-                if (self.cursor_y == (height-1)):
+                if (self.cursor_y == self.bundary_y_less):
                     self.cursor_y -= 1
                     self.origin_y += 1
             elif (k == curses.KEY_UP and not self.activeMenu):
                 self.cursor_y -= 1
-                if(self.cursor_y==0):
+                if(self.cursor_y== self.bundary_y_plus):
                     self.cursor_y += 1
                     self.origin_y -= 1
             elif (k == curses.KEY_RIGHT and not self.activeMenu):
                 self.cursor_x += 1
-                if (self.cursor_x == (width-1)):
+                if (self.cursor_x == self.bundary_x_less):
                     self.cursor_x -= 1
                     self.origin_x += 1
             elif (k == curses.KEY_LEFT and not self.activeMenu):
                 self.cursor_x -= 1
-                if (self.cursor_x == 0):
+                if (self.cursor_x == self.bundary_x_plus):
                     self.cursor_x += 1
                     self.origin_x -= 1
             elif (k == ord('a') and self.activeMenu):
@@ -228,7 +243,7 @@ class screen():
             self.wTimeInd.border()
             self.wBoard.border()
 
-            self.wBoard.addstr(self.cursor_y, self.cursor_x, "@", curses.color_pair(1))
+            self.wBoard.addstr(self.cursor_y, self.cursor_x, "@", curses.color_pair(7))
 
             keystr = "Last key pressed: {}".format(k)
 

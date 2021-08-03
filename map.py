@@ -15,7 +15,7 @@ class map():
              + 0.13 * self.noiseElevation.noise2d(8 * nx, 8 * ny)
              + 0.06 * self.noiseElevation.noise2d(16 * nx, 16 * ny)
              + 0.03 * self.noiseElevation.noise2d(32 * nx, 32 * ny))
-        e =((e / (1.00 + 0.50 + 0.25 + 0.13 + 0.06 + 0.03)) / 2.0 + 0.5)**2
+        e =((e / (1.00 + 0.50 + 0.25 + 0.13 + 0.06 + 0.03)) / 2.0 + 0.5)**2.7 ## change 2.7 to increase or decrese the globql elevation
         m = (1.00 * self.noiseMoisture.noise2d(1 * nx, 1 * ny)
              + 0.50 * self.noiseMoisture.noise2d(2 * nx, 2 * ny)
              + 0.25 * self.noiseMoisture.noise2d(4 * nx, 4 * ny)
@@ -27,7 +27,7 @@ class map():
         return e, m
 
     def BiomeCalculation(self, e, m):
-        if (e < 0.1):
+        if (e < 0.1 and m >0.3):
             return "OCEAN"
         if (e < 0.12 and m >0.5):
             return "BEACH"
