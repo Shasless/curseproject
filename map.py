@@ -1,11 +1,12 @@
 from opensimplex import OpenSimplex
-
+from sys import getsizeof
 
 class map():
 
     def __init__(self):
         self.noiseElevation = OpenSimplex(1818811)
         self.noiseMoisture = OpenSimplex(987654)
+        self.generateMap = {}
 
     def NoiseCalculation(self, nx, ny):
         e = (1.00 * self.noiseElevation.noise2d(1 * nx, 1 * ny)
@@ -22,6 +23,7 @@ class map():
              + 0.06 * self.noiseMoisture.noise2d(16 * nx, 16 * ny)
              + 0.03 * self.noiseMoisture.noise2d(32 * nx, 32 * ny))
         m = ((m/(1.00 + 0.50 + 0.25 + 0.13 + 0.06 + 0.03))/ 2.0 + 0.5)
+        self.generateMap[(nx,ny)]=(e,m)
         return e, m
 
     def BiomeCalculation(self, e, m):
@@ -30,7 +32,7 @@ class map():
         if (e < 0.12 and m >0.5):
             return "BEACH"
 
-        if (e > 0.8):
+        if (e > 0.75):
             if (m < 0.1):
                 return "SCORCHED"
             if (m < 0.2):
@@ -64,5 +66,12 @@ class map():
         return "TROPICAL_RAIN_FOREST"
 
     def mapreturn(self,x,y):
-        e,m = self.NoiseCalculation(x,y)
+
+        if(getsizeof(self.generateMap)>7200006):
+            self.generateMap.clear()
+
+        if((x,y) in self.generateMap ):
+            e,m = self.generateMap[(x,y)]
+        else:
+            e,m = self.NoiseCalculation(x,y)
         return self.BiomeCalculation(e,m)

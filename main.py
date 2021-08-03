@@ -119,7 +119,7 @@ class screen():
 
             for nx in range(1,  width - 1):
 
-                biome = self.map.mapreturn((self.origin_x+nx) /30, (self.origin_y+ny) /30)
+                biome = self.map.mapreturn((self.origin_x+nx) /25, (self.origin_y+ny) /25)
                 if biome == "OCEAN":
                     self.wBoard.addstr(ny, nx, "&", curses.color_pair(5))
                 elif biome == "BEACH":
