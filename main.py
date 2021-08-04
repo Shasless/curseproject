@@ -41,41 +41,23 @@ class screen():
             pass
         self.wHistoric = curses.newwin(int(height * 0.8), int(width * 0.8), int(height * 0.1), int(width * 0.1))
         self.wHistoric.box()
+        height, width = self.wHistoric.getmaxyx()
 
-        for i in range(0, len(self.InfoLine)):
-            self.wHistoric.addstr(i + 1, 1, self.InfoLine[i])
+        if((height-2)>len(self.InfoLine)):
+            a = 0
+        else:
+            a = len(self.InfoLine)-height+2
+
+        for i in range(a, len(self.InfoLine)):
+            self.wHistoric.addstr(i-a+1, 1, self.InfoLine[i])
+
+
         self.wHistoric.refresh()
 
         while (k != ord('q')):
             if (k == curses.KEY_RESIZE):
                 self.iniateWin(screen)
-                self.fillBoard()
-
-                self.wMenu.border()
-                self.wInfo.border()
-                self.wTimeInd.border()
-                self.wBoard.border()
-
-                self.wBoard.addstr(self.cursor_y, self.cursor_x, "@", curses.color_pair(1))
-
-                keystr = "Last key pressed: {}".format(k)
-
-                self.wInfo.addstr(1, 1, keystr)
-                for i in range(2, 5):
-                    self.wInfo.addstr(i, 1, self.InfoLine[len(self.InfoLine) + 1 - i])
-
-                if (self.activeMenu):
-                    self.fillMenu()
-
-                    for i in range(1, len(self.Textmenu)):
-                        if (i == self.MenuSelect):
-                            self.wMenu.addstr(2 * i - 1, 1, self.Textmenu[i], curses.color_pair(3))
-                        else:
-                            self.wMenu.addstr(2 * i - 1, 1, self.Textmenu[i])
-                self.wInfo.refresh()
-                self.wTimeInd.refresh()
-                self.wBoard.refresh()
-                self.wMenu.refresh()
+                self.RefreshWin(k)
                 self.ShowHistoric(screen)
                 break
 
@@ -167,10 +149,46 @@ class screen():
                     self.InfoLine.append("You are now in {}".format(biome))
 
     def fillMenu(self):
-        height, width = self.wMenu.getmaxyx()
-        for y in range(1, height - 1):
-            for x in range(1, width - 1):
-                self.wMenu.insch(y, x, ord(' '))
+        self.wMenu.clear()
+
+        for i in range(1, len(self.Textmenu)):
+            if (i == self.MenuSelect):
+                self.wMenu.addstr(2 * i - 1, 1, self.Textmenu[i], curses.color_pair(3))
+            else:
+                self.wMenu.addstr(2 * i - 1, 1, self.Textmenu[i])
+
+    def fillWInfo(self,k):
+        self.wInfo.clear()
+
+        self.wInfo.addstr(1, 1, "Last key pressed: {}".format(k))  ## TEST PURPOSE
+
+        for i in range(2, 3):
+            self.wInfo.addstr(i, 1, self.InfoLine[len(self.InfoLine) + 1 - i])
+
+
+    def RefreshWin(self,k):
+        self.fillBoard()
+
+
+
+        self.wBoard.addstr(self.cursor_y, self.cursor_x, "@", curses.color_pair(7))
+
+        self.fillWInfo(k)
+
+
+        if (self.activeMenu):
+            self.fillMenu()
+        if (self.activeMenu):
+            self.wMenu.border()
+
+        self.wInfo.border()
+        self.wTimeInd.border()
+        self.wBoard.border()
+        self.wInfo.refresh()
+        self.wTimeInd.refresh()
+        self.wBoard.refresh()
+        if (self.activeMenu):
+            self.wMenu.refresh()
 
     def main(self, screen):
 
@@ -235,36 +253,7 @@ class screen():
                 if (self.MenuSelect == 1):
                     self.ShowHistoric(screen)
 
-            self.fillBoard()
-
-            if (self.activeMenu):
-                self.wMenu.border()
-            self.wInfo.border()
-            self.wTimeInd.border()
-            self.wBoard.border()
-
-            self.wBoard.addstr(self.cursor_y, self.cursor_x, "@", curses.color_pair(7))
-
-            keystr = "Last key pressed: {}".format(k)
-
-            self.wInfo.addstr(1, 1, keystr)
-            for i in range(2, 3):
-                self.wInfo.addstr(i, 1, self.InfoLine[len(self.InfoLine) + 1 - i])
-
-            if (self.activeMenu):
-                self.fillMenu()
-
-                for i in range(1, len(self.Textmenu)):
-                    if (i == self.MenuSelect):
-                        self.wMenu.addstr(2 * i - 1, 1, self.Textmenu[i], curses.color_pair(3))
-                    else:
-                        self.wMenu.addstr(2 * i - 1, 1, self.Textmenu[i])
-            self.wInfo.refresh()
-            self.wTimeInd.refresh()
-            self.wBoard.refresh()
-            if (self.activeMenu):
-                self.wMenu.refresh()
-
+            self.RefreshWin(k)
             k = screen.getch()
 
             pass
