@@ -1,29 +1,25 @@
 import curses
 
 from map import map
+from player import player
 
 
 class screen():
 
     def __init__(self):
         self.newwidth = 100000000000
+        self.activeGame = True
         self.activeMenu = False
         self.MenuSelect = 1
-        self.cursor_x = 60
-        self.cursor_y = 20
         self.origin_x = 0
         self.origin_y = 0
-        self.bundary_x_plus = 0
-        self.bundary_x_less = 0
-        self.bundary_y_plus = 0
-        self.bundary_y_less = 0
-        self.currentBiome="NEW"
         self.InfoLine = ["first", "second", "third", "fourth", "fifth"]
         self.Textmenu = ["", "historic", "second", "third", "fourth", "fifth"]
+        self.BlockingBiome = ["OCEAN"]
         self.map = map()
+        self.player = player()
         curses.wrapper(self.main)
 
-    ## TO REWORK
     def ShowHistoric(self, screen):
         k = 0
         height, width = screen.getmaxyx()
@@ -43,14 +39,13 @@ class screen():
         self.wHistoric.box()
         height, width = self.wHistoric.getmaxyx()
 
-        if((height-2)>len(self.InfoLine)):
+        if ((height - 2) > len(self.InfoLine)):
             a = 0
         else:
-            a = len(self.InfoLine)-height+2
+            a = len(self.InfoLine) - height + 2
 
         for i in range(a, len(self.InfoLine)):
-            self.wHistoric.addstr(i-a+1, 1, self.InfoLine[i])
-
+            self.wHistoric.addstr(i - a + 1, 1, self.InfoLine[i])
 
         self.wHistoric.refresh()
 
@@ -76,10 +71,10 @@ class screen():
         c = width - b
         d = height - a
 
-        self.bundary_x_plus = int(0.3 *width)
-        self.bundary_x_less =  int(0.7 *width)
-        self.bundary_y_plus =  int(0.3* a)
-        self.bundary_y_less =  int(0.7 * a)
+        self.player.bundary_x_plus = int(0.3 * width)
+        self.player.bundary_x_less = int(0.7 * width)
+        self.player.bundary_y_plus = int(0.3 * a)
+        self.player.bundary_y_less = int(0.7 * a)
 
         try:
             self.wMenu.erase()
@@ -94,8 +89,6 @@ class screen():
         except:
             pass
 
-
-
         if (self.activeMenu):
             self.wMenu = curses.newwin(a, b, 0, c)
             self.wBoard = curses.newwin(a, c + 1)
@@ -105,15 +98,14 @@ class screen():
         self.wInfo = curses.newwin(d, c + 1, a - 1, 0)
         self.wTimeInd = curses.newwin(d, b, a - 1, c)
 
-    ##fill for pupose of test
     def fillBoard(self):
         height, width = self.wBoard.getmaxyx()
 
         for ny in range(1, height - 1):
 
-            for nx in range(1,  width - 1):
+            for nx in range(1, width - 1):
 
-                biome = self.map.mapreturn((self.origin_x+nx) /30, (self.origin_y+ny) /30)
+                biome = self.map.mapreturn((self.origin_x + nx) / 30, (self.origin_y + ny) / 30)
                 if biome == "OCEAN":
                     self.wBoard.addstr(ny, nx, "&", curses.color_pair(5))
                 elif biome == "BEACH":
@@ -144,9 +136,21 @@ class screen():
                     self.wBoard.addstr(ny, nx, "£", curses.color_pair(4))
                 elif biome == "TROPICAL_RAIN_FOREST":
                     self.wBoard.addstr(ny, nx, "€", curses.color_pair(4))
-                if(self.currentBiome != biome and nx == self.cursor_x and ny ==self.cursor_y):
-                    self.currentBiome = biome
+                if (self.player.currentBiome != biome and nx == self.player.cursor_x and ny == self.player.cursor_y):
+                    self.player.currentBiome = biome
                     self.InfoLine.append("You are now in {}".format(biome))
+                if (
+                        self.player.Biome_x_less != biome and nx == self.player.cursor_x - 1 and ny == self.player.cursor_y):
+                    self.player.Biome_x_less = biome
+                if (
+                        self.player.Biome_x_plus != biome and nx == self.player.cursor_x + 1 and ny == self.player.cursor_y):
+                    self.player.Biome_x_plus = biome
+                if (
+                        self.player.Biome_y_less != biome and nx == self.player.cursor_x and ny == self.player.cursor_y - 1):
+                    self.player.Biome_y_less = biome
+                if (
+                        self.player.Biome_y_plus != biome and nx == self.player.cursor_x and ny == self.player.cursor_y + 1):
+                    self.player.Biome_y_plus = biome
 
     def fillMenu(self):
         self.wMenu.clear()
@@ -157,7 +161,7 @@ class screen():
             else:
                 self.wMenu.addstr(2 * i - 1, 1, self.Textmenu[i])
 
-    def fillWInfo(self,k):
+    def fillWInfo(self, k):
         self.wInfo.clear()
 
         self.wInfo.addstr(1, 1, "Last key pressed: {}".format(k))  ## TEST PURPOSE
@@ -165,16 +169,12 @@ class screen():
         for i in range(2, 3):
             self.wInfo.addstr(i, 1, self.InfoLine[len(self.InfoLine) + 1 - i])
 
-
-    def RefreshWin(self,k):
+    def RefreshWin(self, k):
         self.fillBoard()
 
-
-
-        self.wBoard.addstr(self.cursor_y, self.cursor_x, "@", curses.color_pair(7))
+        self.wBoard.addstr(self.player.cursor_y, self.player.cursor_x, "@", curses.color_pair(7))
 
         self.fillWInfo(k)
-
 
         if (self.activeMenu):
             self.fillMenu()
@@ -201,6 +201,7 @@ class screen():
         # Clear and refresh the screen for a blank canvas
         screen.clear()
         screen.refresh()
+        ## curses.halfdelay(10) ## cause a type of fps n in tenths of sec
         curses.start_color()
         curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
         curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
@@ -213,11 +214,13 @@ class screen():
         self.iniateWin(screen)
 
         # Loop where k is the last character pressed
-        while (k != ord('q')):
-            height, width = self.wBoard.getmaxyx()
-            if (k == curses.KEY_RESIZE):
+        while (self.activeGame):
+            if (k == ord('q') and not self.activeMenu):
+                self.activeGame = False
+                break
+            elif (k == curses.KEY_RESIZE):
                 self.iniateWin(screen)
-            elif (k == ord('m')):
+            elif (k == ord('m') or (k == ord('q') and self.activeMenu)):
                 self.activeMenu = not self.activeMenu
                 self.MenuSelect = 1
                 self.iniateWin(screen)
@@ -229,25 +232,25 @@ class screen():
                 self.MenuSelect -= 1
                 if (self.MenuSelect == 0):
                     self.MenuSelect = 5
-            elif (k == curses.KEY_DOWN and not self.activeMenu):
-                self.cursor_y += 1
-                if (self.cursor_y == self.bundary_y_less):
-                    self.cursor_y -= 1
+            elif (k == curses.KEY_DOWN and not self.activeMenu and self.player.Biome_y_plus not in self.BlockingBiome):
+                self.player.cursor_y += 1
+                if (self.player.cursor_y == self.player.bundary_y_less):
+                    self.player.cursor_y -= 1
                     self.origin_y += 1
-            elif (k == curses.KEY_UP and not self.activeMenu):
-                self.cursor_y -= 1
-                if(self.cursor_y== self.bundary_y_plus):
-                    self.cursor_y += 1
+            elif (k == curses.KEY_UP and not self.activeMenu and self.player.Biome_y_less not in self.BlockingBiome):
+                self.player.cursor_y -= 1
+                if (self.player.cursor_y == self.player.bundary_y_plus):
+                    self.player.cursor_y += 1
                     self.origin_y -= 1
-            elif (k == curses.KEY_RIGHT and not self.activeMenu):
-                self.cursor_x += 1
-                if (self.cursor_x == self.bundary_x_less):
-                    self.cursor_x -= 1
+            elif (k == curses.KEY_RIGHT and not self.activeMenu and self.player.Biome_x_plus not in self.BlockingBiome):
+                self.player.cursor_x += 1
+                if (self.player.cursor_x == self.player.bundary_x_less):
+                    self.player.cursor_x -= 1
                     self.origin_x += 1
-            elif (k == curses.KEY_LEFT and not self.activeMenu):
-                self.cursor_x -= 1
-                if (self.cursor_x == self.bundary_x_plus):
-                    self.cursor_x += 1
+            elif (k == curses.KEY_LEFT and not self.activeMenu and self.player.Biome_x_less not in self.BlockingBiome):
+                self.player.cursor_x -= 1
+                if (self.player.cursor_x == self.player.bundary_x_plus):
+                    self.player.cursor_x += 1
                     self.origin_x -= 1
             elif (k == ord('a') and self.activeMenu):
                 if (self.MenuSelect == 1):
